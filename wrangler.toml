@@ -1,3 +1,7 @@
 name = "rpc-proxy" # todo
 main = "./src/index.ts"
 compatibility_date = "2022-05-03"
+[vars]
+CORS_ALLOW_ORIGIN = "https://app.sunrisestake.com,https://dev.sunrisestake.com,http://localhost:3000"
+#HELIUS_API_KEY = "***" # Set using `yarn wrangler secret put HELIUS_API_KEY`
+

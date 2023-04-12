@@ -19,9 +19,12 @@ export default {
 			"Access-Control-Allow-Headers": "*",
 		}
 		if (supportedDomains) {
-			const origin = request.headers.get('Origin')
+			const origin = request.headers.get("Origin") || request.headers.get("origin");
 			if (origin && supportedDomains.includes(origin)) {
-				corsHeaders['Access-Control-Allow-Origin'] = origin
+				corsHeaders["Access-Control-Allow-Origin"] = origin;
+			} else {
+				// set to empty here otherwise the proxied request may set it to *
+				corsHeaders["Access-Control-Allow-Origin"] = "";
 			}
 		} else {
 			corsHeaders['Access-Control-Allow-Origin'] = '*'
@@ -51,6 +54,19 @@ export default {
 			}
 		});
 
-		return await fetch(proxyRequest);
+		const response = await fetch(proxyRequest);
+
+		// Replace the response headers with the CORS headers set above,
+		// otherwise they are overwritten by the proxied request
+		const responseHeaders = new Headers(response.headers)
+		Object.entries(corsHeaders).map(([k, v]) => {
+			responseHeaders.set(k, v)
+		});
+
+		return new Response(response.body, {
+			headers: responseHeaders,
+			status: response.status,
+			statusText: response.statusText
+		});
 	},
 };
